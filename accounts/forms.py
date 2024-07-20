@@ -1,6 +1,7 @@
 from typing import Any
 from django import forms
 from .models import *
+from vendor.models import Vendor
 class UserForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput())
     confirm_password = forms.CharField(widget=forms.PasswordInput())
@@ -14,3 +15,5 @@ class UserForm(forms.ModelForm):
         confirm_password = cleaned_data.get("confirm_password")
         if password!=confirm_password:
             raise forms.ValidationError("Password doesnot match")
+
+
