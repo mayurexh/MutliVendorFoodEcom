@@ -100,5 +100,6 @@ class UserProfile(models.Model):
     def __str__(self) -> str:
         return self.user.email 
 
-
+    def get_address(self):
+        return f'{self.address_line_1}, {self.address_line_2}'
 
