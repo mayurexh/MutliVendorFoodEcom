@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
 from accounts.views import check_role_vendor
 from menu.models import Category, FoodItem
-from menu.forms import CategoryForm
+from menu.forms import CategoryForm, FoodItemForm
 from django.template.defaultfilters import slugify
 
 
@@ -115,8 +115,71 @@ def edit_category(request, pk= None):
     return render(request, "vendor/edit_category.html", context)
 
 
+@login_required
+@user_passes_test(check_role_vendor)
 def delete_category(request,pk = None):
     category = get_object_or_404(Category, pk = pk)
     category.delete()
     messages.success(request, "The category has been deleted")
     return redirect("menu-builder")
+
+
+@login_required
+@user_passes_test(check_role_vendor)
+def add_food(request):
+    if request.method == "POST":
+        form = FoodItemForm(request.POST, request.FILES) #request.POST will contain the POST (category_name, description) coming from the frontend
+        if form.is_valid():
+            food_title = form.cleaned_data["food_title"]
+            #assign vendor and slug to the category before saving the data
+            fooditem = form.save(commit=False)
+            fooditem.vendor = get_vendor(request)
+            fooditem.slug = slugify(food_title)
+            fooditem.save()
+            messages.success(request, "Your category has been saved!")
+            return redirect("food_itemsby_category",fooditem.category.id)
+        else:
+            messages.error(request, "Invalid form data")
+    else:
+        form = FoodItemForm()
+        #overwrite the queryset of category which give category for all users instead of the requested one
+        form.fields["category"].queryset = Category.objects.filter(vendor = get_vendor(request))
+     
+    context= {"form":form}
+    return render(request, "vendor/add_food.html",context)
+
+
+def edit_food(request,pk = None):
+    food_item = FoodItem.objects.get(pk = pk)
+    if request.method == "POST":
+        form = FoodItemForm(request.POST, request.FILES, instance=food_item) #request.POST will contain the POST (category_name, description) coming from the frontend
+        if form.is_valid():
+            food_title = form.cleaned_data["food_title"]
+            #assign vendor and slug to the category before saving the data
+            fooditem = form.save(commit=False)
+            fooditem.vendor = get_vendor(request)
+            fooditem.slug = slugify(food_title)
+            fooditem.save()
+            messages.success(request, "Your category has been saved!")
+            return redirect("food_itemsby_category",fooditem.category.id)
+        else:
+            messages.error(request, "Invalid form data")
+    else:
+        form = FoodItemForm(instance=food_item)
+        form.fields["category"].queryset = Category.objects.filter(vendor = get_vendor(request))
+        
+     
+    context= {"form":form,
+              "food_item":food_item}
+    
+    
+    return render(request, "vendor/edit_food.html", context)
+    
+    
+    
+def delete_food(request, pk = None):
+    food_item = FoodItem.objects.get(pk=pk)
+    category = food_item.category
+    category_id = category.id
+    food_item.delete()
+    return redirect("food_itemsby_category",category_id )

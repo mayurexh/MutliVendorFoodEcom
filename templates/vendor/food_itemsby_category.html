@@ -50,13 +50,14 @@
                       <td>
                         <a href="#">
                           {%if food.is_available%}
-                          <p class="text-success">Available</p>
+                          <span class="badge badge-success">Available</span>
                           {%else%}
-                          <p class="text-danger">Unavailable</p>
+                          <span class="badge badge-success">Unavailable</span>
+
                           {%endif%}
                         </a>
                       </td>
-                      <td>Edit Delete</td>
+                      <td><a href="{%url 'edit_food' food.id%}">Edit</a></td><td><a href="{%url 'delete_food' food.id%}" onclick="return confirm('Do you really wanna delete this category?')">Delete</a></td>
                       <td></td>
                     </tr>
                   </tbody>
@@ -65,7 +66,7 @@
                 {%else%}
                 <h5 class="text-center">No Food Items found</h5>
                 <div class="text-center">
-                  <a href="#" class="btn btn-success">Add food item</a>
+                  <a href="{%url 'add_food'%}" class="btn btn-success">Add food item</a>
                 </div>
                 {%endif%}
                 <!-- My Restaurants Form End -->
